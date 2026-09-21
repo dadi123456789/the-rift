@@ -4,23 +4,55 @@ using UnityEngine;
 public class IsometricPlayerController : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float touchDeadZone = 20f;
 
     Rigidbody rb;
-    // Isometric movement is rotated 45° so WASD feels diagonal on screen.
     static readonly Quaternion IsoRotation = Quaternion.Euler(0f, 45f, 0f);
+
+    int activeTouchId = -1;
+    Vector2 touchOrigin;
 
     void Awake() => rb = GetComponent<Rigidbody>();
 
+    void Update()
+    {
+        for (int i = 0; i < Input.touchCount; i++)
+        {
+            Touch touch = Input.GetTouch(i);
+
+            if (touch.phase == TouchPhase.Began && touch.position.x < Screen.width * 0.5f && activeTouchId == -1)
+            {
+                activeTouchId = touch.fingerId;
+                touchOrigin = touch.position;
+            }
+            if (touch.fingerId == activeTouchId &&
+                (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled))
+            {
+                activeTouchId = -1;
+            }
+        }
+    }
+
     void FixedUpdate()
     {
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
+        Vector2 inputVector = Vector2.zero;
 
-        Vector3 input = new Vector3(h, 0f, v).normalized;
-        Vector3 isoDirection = IsoRotation * input;
+        if (activeTouchId != -1)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+                if (touch.fingerId == activeTouchId)
+                {
+                    Vector2 delta = touch.position - touchOrigin;
+                    if (delta.magnitude > touchDeadZone)
+                        inputVector = delta.normalized;
+                }
+            }
+        }
 
-        Vector3 newPosition = rb.position + isoDirection * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPosition);
+        Vector3 isoDirection = IsoRotation * new Vector3(inputVector.x, 0f, inputVector.y);
+        rb.MovePosition(rb.position + isoDirection * moveSpeed * Time.fixedDeltaTime);
 
         if (isoDirection.sqrMagnitude > 0.01f)
             transform.forward = isoDirection;
