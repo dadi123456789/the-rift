@@ -57,5 +57,13 @@ public class IsometricPlayerController : MonoBehaviour
 
         if (isoDirection.sqrMagnitude > 0.01f)
             transform.forward = isoDirection;
+                    // Failsafe: never allow the player to end up below the ground surface,
+        // regardless of any physics edge-case.
+        if (rb.position.y < 1f)
+        {
+            rb.position = new Vector3(rb.position.x, 1f, rb.position.z);
+            if (rb.velocity.y < 0f)
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        }
     }
 }
