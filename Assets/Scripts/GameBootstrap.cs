@@ -10,7 +10,6 @@ public static class GameBootstrap
             Object.Destroy(go);
 
         BuildWorld();
-        UIBootstrap.BuildJoystickUI();
     }
 
     static void BuildWorld()
@@ -20,12 +19,6 @@ public static class GameBootstrap
         ground.transform.position = new Vector3(0f, -0.5f, 0f);
         ground.transform.localScale = new Vector3(100f, 1f, 100f);
         ground.GetComponent<Renderer>().material.color = new Color(0.35f, 0.45f, 0.3f);
-
-        // Reference marker so scale and camera framing are easy to judge visually.
-        var marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        marker.name = "ReferenceMarker";
-        marker.transform.position = new Vector3(3f, 0.5f, 3f);
-        marker.GetComponent<Renderer>().material.color = Color.red;
 
         var sunGO = new GameObject("Sun");
         var sun = sunGO.AddComponent<Light>();
@@ -41,16 +34,30 @@ public static class GameBootstrap
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        player.AddComponent<IsometricPlayerController>();
+        var controller = player.AddComponent<IsometricPlayerController>();
+        var combat = player.AddComponent<PlayerCombat>();
+        var playerHealth = player.AddComponent<Health>();
+
+        var enemy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        enemy.name = "Enemy";
+        enemy.transform.position = new Vector3(4f, 1f, 4f);
+        enemy.GetComponent<Renderer>().material.color = new Color(0.6f, 0.1f, 0.1f);
+        var enemyRb = enemy.AddComponent<Rigidbody>();
+        enemyRb.freezeRotation = true;
+        enemyRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        enemy.AddComponent<Health>();
+        enemy.AddComponent<SimpleEnemy>();
 
         var camGO = new GameObject("IsometricCamera");
         var cam = camGO.AddComponent<Camera>();
         cam.orthographic = true;
-        cam.orthographicSize = 6f;
+        cam.orthographicSize = 8f;
         cam.nearClipPlane = 0.3f;
         cam.backgroundColor = new Color(0.08f, 0.09f, 0.14f);
         cam.clearFlags = CameraClearFlags.SolidColor;
         var follow = camGO.AddComponent<IsometricCameraFollow>();
         follow.target = player.transform;
+
+        UIBootstrap.BuildUI(controller, combat, playerHealth);
     }
 }

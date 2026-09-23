@@ -6,13 +6,16 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
     public static VirtualJoystick Instance { get; private set; }
     public Vector2 InputVector { get; private set; }
 
-    [SerializeField] RectTransform background;
-    [SerializeField] RectTransform handle;
+    RectTransform background;
+    RectTransform handle;
     float radius;
 
-    void Awake()
+    void Awake() => Instance = this;
+
+    public void Initialize(RectTransform backgroundRect, RectTransform handleRect)
     {
-        Instance = this;
+        background = backgroundRect;
+        handle = handleRect;
         radius = background.sizeDelta.x * 0.5f;
     }
 
@@ -20,6 +23,8 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (background == null) return;
+
         Vector2 localPoint;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             background, eventData.position, eventData.pressEventCamera, out localPoint);

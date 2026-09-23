@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 public static class UIBootstrap
 {
-    public static void BuildJoystickUI()
+    public static void BuildUI(IsometricPlayerController player, PlayerCombat combat, Health playerHealth)
     {
         var esGO = new GameObject("EventSystem");
         esGO.AddComponent<EventSystem>();
@@ -18,10 +18,17 @@ public static class UIBootstrap
         scaler.referenceResolution = new Vector2(1920, 1080);
         canvasGO.AddComponent<GraphicRaycaster>();
 
+        BuildJoystick(canvasGO.transform);
+        BuildJumpButton(canvasGO.transform, player);
+        BuildAttackButton(canvasGO.transform, combat);
+        BuildHealthBar(canvasGO.transform, playerHealth);
+    }
+
+    static void BuildJoystick(Transform parent)
+    {
         var bgGO = new GameObject("JoystickBackground");
-        bgGO.transform.SetParent(canvasGO.transform, false);
-        var bgImage = bgGO.AddComponent<Image>();
-        bgImage.color = new Color(1f, 1f, 1f, 0.25f);
+        bgGO.transform.SetParent(parent, false);
+        bgGO.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.25f);
         var bgRect = bgGO.GetComponent<RectTransform>();
         bgRect.sizeDelta = new Vector2(220f, 220f);
         bgRect.anchorMin = new Vector2(0f, 0f);
@@ -31,19 +38,71 @@ public static class UIBootstrap
 
         var handleGO = new GameObject("JoystickHandle");
         handleGO.transform.SetParent(bgGO.transform, false);
-        var handleImage = handleGO.AddComponent<Image>();
-        handleImage.color = new Color(1f, 1f, 1f, 0.6f);
+        handleGO.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
         var handleRect = handleGO.GetComponent<RectTransform>();
         handleRect.sizeDelta = new Vector2(100f, 100f);
         handleRect.anchoredPosition = Vector2.zero;
 
         var joystick = bgGO.AddComponent<VirtualJoystick>();
-        var fields = typeof(VirtualJoystick).GetFields(
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        foreach (var f in fields)
-        {
-            if (f.Name == "background") f.SetValue(joystick, bgRect);
-            if (f.Name == "handle") f.SetValue(joystick, handleRect);
-        }
+        joystick.Initialize(bgRect, handleRect);
+    }
+
+    static void BuildJumpButton(Transform parent, IsometricPlayerController player)
+    {
+        var btnGO = new GameObject("JumpButton");
+        btnGO.transform.SetParent(parent, false);
+        btnGO.AddComponent<Image>().color = new Color(1f, 0.85f, 0.4f, 0.7f);
+        var rect = btnGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(150f, 150f);
+        rect.anchorMin = new Vector2(1f, 0f);
+        rect.anchorMax = new Vector2(1f, 0f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(-140f, 160f);
+
+        btnGO.AddComponent<Button>().onClick.AddListener(player.RequestJump);
+    }
+
+    static void BuildAttackButton(Transform parent, PlayerCombat combat)
+    {
+        var btnGO = new GameObject("AttackButton");
+        btnGO.transform.SetParent(parent, false);
+        btnGO.AddComponent<Image>().color = new Color(0.8f, 0.2f, 0.2f, 0.7f);
+        var rect = btnGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(150f, 150f);
+        rect.anchorMin = new Vector2(1f, 0f);
+        rect.anchorMax = new Vector2(1f, 0f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(-320f, 160f);
+
+        btnGO.AddComponent<Button>().onClick.AddListener(combat.RequestAttack);
+    }
+
+    static void BuildHealthBar(Transform parent, Health playerHealth)
+    {
+        var bgGO = new GameObject("HealthBarBackground");
+        bgGO.transform.SetParent(parent, false);
+        bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+        var bgRect = bgGO.GetComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(300f, 30f);
+        bgRect.anchorMin = new Vector2(0f, 1f);
+        bgRect.anchorMax = new Vector2(0f, 1f);
+        bgRect.pivot = new Vector2(0f, 1f);
+        bgRect.anchoredPosition = new Vector2(30f, -30f);
+
+        var fillGO = new GameObject("HealthBarFill");
+        fillGO.transform.SetParent(bgGO.transform, false);
+        var fillImage = fillGO.AddComponent<Image>();
+        fillImage.color = new Color(0.8f, 0.2f, 0.2f, 0.9f);
+        fillImage.type = Image.Type.Filled;
+        fillImage.fillMethod = Image.FillMethod.Horizontal;
+        fillImage.fillAmount = 1f;
+        var fillRect = fillGO.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+
+        if (playerHealth != null)
+            playerHealth.OnHealthChanged += (current, max) => fillImage.fillAmount = current / max;
     }
 }

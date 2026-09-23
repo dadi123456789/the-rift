@@ -4,14 +4,25 @@ using UnityEngine;
 public class IsometricPlayerController : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float jumpForce = 6f;
+    [SerializeField] float groundCheckDistance = 0.65f;
 
     Rigidbody rb;
+    bool jumpRequested;
     static readonly Quaternion IsoRotation = Quaternion.Euler(0f, 45f, 0f);
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+    }
+
+    // Called by the jump button UI.
+    public void RequestJump() => jumpRequested = true;
+
+    bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance);
     }
 
     void FixedUpdate()
@@ -28,6 +39,14 @@ public class IsometricPlayerController : MonoBehaviour
         if (isoDirection.sqrMagnitude > 0.01f)
             transform.forward = isoDirection;
 
+        if (jumpRequested)
+        {
+            if (IsGrounded())
+                rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+            jumpRequested = false;
+        }
+
+        // Failsafe: never allow the player below ground level.
         if (rb.position.y < 1f)
         {
             rb.position = new Vector3(rb.position.x, 1f, rb.position.z);
