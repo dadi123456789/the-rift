@@ -6,6 +6,8 @@ public static class GameBootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
+        GameManager.ClearListeners();
+
         foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
             Object.Destroy(go);
 
@@ -36,17 +38,6 @@ public static class GameBootstrap
         groundMat.mainTexture = BuildGridTexture();
         groundMat.mainTextureScale = new Vector2(50f, 50f);
 
-        // Fixed landmarks (do NOT move) so movement is visually obvious against them.
-        var marker1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        marker1.name = "ReferenceMarker_Red";
-        marker1.transform.position = new Vector3(6f, 0.5f, 0f);
-        marker1.GetComponent<Renderer>().material.color = Color.red;
-
-        var marker2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        marker2.name = "ReferenceMarker_Blue";
-        marker2.transform.position = new Vector3(-6f, 0.5f, 6f);
-        marker2.GetComponent<Renderer>().material.color = Color.blue;
-
         var sunGO = new GameObject("Sun");
         var sun = sunGO.AddComponent<Light>();
         sun.type = LightType.Directional;
@@ -64,22 +55,14 @@ public static class GameBootstrap
         var controller = player.AddComponent<IsometricPlayerController>();
         var combat = player.AddComponent<PlayerCombat>();
         var playerHealth = player.AddComponent<Health>();
+        playerHealth.OnDeath += GameManager.HandlePlayerDeath;
 
-        var enemy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        enemy.name = "Enemy";
-        enemy.transform.position = new Vector3(4f, 1f, 4f);
-        enemy.GetComponent<Renderer>().material.color = new Color(0.6f, 0.1f, 0.1f);
-        var enemyRb = enemy.AddComponent<Rigidbody>();
-        enemyRb.freezeRotation = true;
-        enemyRb.interpolation = RigidbodyInterpolation.Interpolate;
-        enemyRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        enemy.AddComponent<Health>();
-        enemy.AddComponent<SimpleEnemy>();
+        EnemySpawner.SpawnWave(4, 7f);
 
         var camGO = new GameObject("IsometricCamera");
         var cam = camGO.AddComponent<Camera>();
         cam.orthographic = true;
-        cam.orthographicSize = 8f;
+        cam.orthographicSize = 10f;
         cam.nearClipPlane = 0.3f;
         cam.backgroundColor = new Color(0.08f, 0.09f, 0.14f);
         cam.clearFlags = CameraClearFlags.SolidColor;
