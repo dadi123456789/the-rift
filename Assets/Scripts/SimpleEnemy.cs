@@ -47,6 +47,13 @@ public class SimpleEnemy : MonoBehaviour
         {
             rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
         }
+
+        if (rb.position.y < 0.5f)
+        {
+            rb.position = new Vector3(rb.position.x, 0.5f, rb.position.z);
+            if (rb.velocity.y < 0f)
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        }
     }
 
     void OnCollisionStay(Collision collision)

@@ -12,13 +12,40 @@ public static class GameBootstrap
         BuildWorld();
     }
 
+    static Texture2D BuildGridTexture()
+    {
+        int size = 64;
+        var tex = new Texture2D(size, size);
+        Color a = new Color(0.35f, 0.45f, 0.3f);
+        Color b = new Color(0.32f, 0.42f, 0.27f);
+        for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+                tex.SetPixel(x, y, (x < size / 2) == (y < size / 2) ? a : b);
+        tex.filterMode = FilterMode.Point;
+        tex.Apply();
+        return tex;
+    }
+
     static void BuildWorld()
     {
         var ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
         ground.name = "Ground";
         ground.transform.position = new Vector3(0f, -0.5f, 0f);
         ground.transform.localScale = new Vector3(100f, 1f, 100f);
-        ground.GetComponent<Renderer>().material.color = new Color(0.35f, 0.45f, 0.3f);
+        var groundMat = ground.GetComponent<Renderer>().material;
+        groundMat.mainTexture = BuildGridTexture();
+        groundMat.mainTextureScale = new Vector2(50f, 50f);
+
+        // Fixed landmarks (do NOT move) so movement is visually obvious against them.
+        var marker1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        marker1.name = "ReferenceMarker_Red";
+        marker1.transform.position = new Vector3(6f, 0.5f, 0f);
+        marker1.GetComponent<Renderer>().material.color = Color.red;
+
+        var marker2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        marker2.name = "ReferenceMarker_Blue";
+        marker2.transform.position = new Vector3(-6f, 0.5f, 6f);
+        marker2.GetComponent<Renderer>().material.color = Color.blue;
 
         var sunGO = new GameObject("Sun");
         var sun = sunGO.AddComponent<Light>();
@@ -44,6 +71,7 @@ public static class GameBootstrap
         enemy.GetComponent<Renderer>().material.color = new Color(0.6f, 0.1f, 0.1f);
         var enemyRb = enemy.AddComponent<Rigidbody>();
         enemyRb.freezeRotation = true;
+        enemyRb.interpolation = RigidbodyInterpolation.Interpolate;
         enemyRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         enemy.AddComponent<Health>();
         enemy.AddComponent<SimpleEnemy>();
