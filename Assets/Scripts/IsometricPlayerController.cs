@@ -5,7 +5,6 @@ public class IsometricPlayerController : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 5f;
     [SerializeField] float jumpForce = 6f;
-    [SerializeField] float groundCheckDistance = 0.65f;
 
     Rigidbody rb;
     bool jumpRequested;
@@ -17,12 +16,14 @@ public class IsometricPlayerController : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
-    // Called by the jump button UI.
     public void RequestJump() => jumpRequested = true;
 
     bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance);
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.2f))
+            return hit.collider.gameObject.name == "Ground";
+        return false;
     }
 
     void FixedUpdate()
@@ -33,7 +34,6 @@ public class IsometricPlayerController : MonoBehaviour
 
         Vector3 isoDirection = IsoRotation * new Vector3(input.x, 0f, input.y);
         Vector3 desiredHorizontal = isoDirection * moveSpeed;
-
         rb.velocity = new Vector3(desiredHorizontal.x, rb.velocity.y, desiredHorizontal.z);
 
         if (isoDirection.sqrMagnitude > 0.01f)
@@ -46,7 +46,6 @@ public class IsometricPlayerController : MonoBehaviour
             jumpRequested = false;
         }
 
-        // Failsafe: never allow the player below ground level.
         if (rb.position.y < 1f)
         {
             rb.position = new Vector3(rb.position.x, 1f, rb.position.z);
