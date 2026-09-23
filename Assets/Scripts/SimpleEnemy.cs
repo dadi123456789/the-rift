@@ -6,6 +6,7 @@ public class SimpleEnemy : MonoBehaviour
     [SerializeField] float moveSpeed = 2.5f;
     [SerializeField] float detectionRange = 8f;
     [SerializeField] float stopDistance = 1.5f;
+    [SerializeField] float attackRange = 1.8f;
     [SerializeField] float contactDamage = 10f;
     [SerializeField] float contactCooldown = 1f;
 
@@ -14,6 +15,7 @@ public class SimpleEnemy : MonoBehaviour
     Renderer rend;
     Color originalColor;
     Transform player;
+    Health playerHealth;
     float lastContactTime = -999f;
 
     void Awake()
@@ -24,10 +26,18 @@ public class SimpleEnemy : MonoBehaviour
         originalColor = rend.material.color;
 
         health.OnHealthChanged += (_, __) => FlashColor();
-        health.OnDeath += () => Destroy(gameObject);
+        health.OnDeath += () =>
+        {
+            GameManager.RegisterKill();
+            Destroy(gameObject);
+        };
 
         var playerGO = GameObject.Find("Player");
-        if (playerGO != null) player = playerGO.transform;
+        if (playerGO != null)
+        {
+            player = playerGO.transform;
+            playerHealth = playerGO.GetComponent<Health>();
+        }
     }
 
     void FixedUpdate()
@@ -48,23 +58,19 @@ public class SimpleEnemy : MonoBehaviour
             rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
         }
 
+        if (distance <= attackRange && Time.time - lastContactTime >= contactCooldown)
+        {
+            lastContactTime = Time.time;
+            if (playerHealth != null)
+                playerHealth.TakeDamage(contactDamage);
+        }
+
         if (rb.position.y < 0.5f)
         {
             rb.position = new Vector3(rb.position.x, 0.5f, rb.position.z);
             if (rb.velocity.y < 0f)
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         }
-    }
-
-    void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.name != "Player") return;
-        if (Time.time - lastContactTime < contactCooldown) return;
-        lastContactTime = Time.time;
-
-        var playerHealth = collision.gameObject.GetComponent<Health>();
-        if (playerHealth != null)
-            playerHealth.TakeDamage(contactDamage);
     }
 
     void FlashColor()
