@@ -22,6 +22,8 @@ public static class UIBootstrap
         BuildJumpButton(canvasGO.transform, player);
         BuildAttackButton(canvasGO.transform, combat);
         BuildHealthBar(canvasGO.transform, playerHealth);
+        BuildKillCounter(canvasGO.transform);
+        BuildGameOverPanel(canvasGO.transform);
     }
 
     static void BuildJoystick(Transform parent)
@@ -104,5 +106,55 @@ public static class UIBootstrap
 
         if (playerHealth != null)
             playerHealth.OnHealthChanged += (current, max) => fillImage.fillAmount = current / max;
+    }
+
+    static void BuildKillCounter(Transform parent)
+    {
+        var textGO = new GameObject("KillCounterText");
+        textGO.transform.SetParent(parent, false);
+        var text = textGO.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = 36;
+        text.color = Color.white;
+        text.alignment = TextAnchor.UpperRight;
+        text.text = "Kills: 0";
+        var rect = textGO.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.sizeDelta = new Vector2(300f, 50f);
+        rect.anchoredPosition = new Vector2(-30f, -30f);
+
+        GameManager.OnKillCountChanged += (count) => text.text = $"Kills: {count}";
+    }
+
+    static void BuildGameOverPanel(Transform parent)
+    {
+        var panelGO = new GameObject("GameOverPanel");
+        panelGO.transform.SetParent(parent, false);
+        panelGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.8f);
+        var panelRect = panelGO.GetComponent<RectTransform>();
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.offsetMin = Vector2.zero;
+        panelRect.offsetMax = Vector2.zero;
+        panelGO.SetActive(false);
+
+        var textGO = new GameObject("GameOverText");
+        textGO.transform.SetParent(panelGO.transform, false);
+        var text = textGO.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = 60;
+        text.color = Color.white;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.text = "GAME OVER\nTap to Restart";
+        var textRect = textGO.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        panelGO.AddComponent<Button>().onClick.AddListener(GameManager.ResetGame);
+        GameManager.OnPlayerDied += () => panelGO.SetActive(true);
     }
 }
