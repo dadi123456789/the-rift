@@ -4,24 +4,24 @@ using UnityEngine.SceneManagement;
 public static class GameBootstrap
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Init()
+    static void Init() => Rebuild();
+
+    // Called both on first launch AND whenever the game needs a full restart —
+    // no scene reload involved, so leftover template objects can never reappear.
+    public static void Rebuild()
     {
         GameManager.ClearListeners();
 
-        // Destroy everything in the current scene IMMEDIATELY (not deferred),
-        // so leftover objects (old "Sphere"/"Plane"/"AWinnerIsYou") can't run
-        // even one more frame before BuildWorld() replaces them.
         foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
             if (go != null)
                 Object.DestroyImmediate(go);
 
-        // ...AND any leftover DontDestroyOnLoad objects from the original template
-        // (this is what was causing the old "A Winner Is You" screen to survive).
         foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
         {
             if (go != null && go.scene.IsValid() && go.scene.name == "DontDestroyOnLoad" && go.transform.parent == null)
                 Object.DestroyImmediate(go);
         }
+
         BuildWorld();
     }
 
