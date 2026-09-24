@@ -79,9 +79,24 @@ public class SimpleEnemy : MonoBehaviour
         StartCoroutine(FlashRoutine());
     }
 
- System.Collections.IEnumerator FlashRoutine()
+System.Collections.IEnumerator FlashRoutine()
     {
         rend.material.color = Color.white;
         yield return new WaitForSeconds(0.15f);
         if (rend != null) rend.material.color = originalColor;
     }
+
+    // مسار احتياطي: يطبّق الضرر مباشرة من التصادم الفيزيائي الحقيقي مع اللاعب،
+    // بشكل مستقل عن حساب المسافة أعلاه، لضمان أن الصحة تنقص فعليًا عند التلامس.
+    void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.name != "Player") return;
+        if (Time.time - lastContactTime < contactCooldown) return;
+
+        var targetHealth = collision.gameObject.GetComponent<Health>();
+        if (targetHealth == null) return;
+
+        lastContactTime = Time.time;
+        targetHealth.TakeDamage(contactDamage);
+    }
+}
