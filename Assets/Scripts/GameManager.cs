@@ -25,11 +25,11 @@ public static class GameManager
 
     public static void HandlePlayerDeath() => OnPlayerDied?.Invoke();
 
-    public static void ResetGame()
+        public static void ResetGame()
     {
         Kills = 0;
         AliveEnemies = 0;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        GameBootstrap.RequestRebuild(); // deferred — never rebuild from inside the click itself
     }
 
     public static void ClearListeners()

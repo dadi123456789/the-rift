@@ -3,24 +3,38 @@ using UnityEngine.SceneManagement;
 
 public static class GameBootstrap
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Init() => Rebuild();
+    static GameObject gameRoot;
 
-    // Called both on first launch AND whenever the game needs a full restart —
-    // no scene reload involved, so leftover template objects can never reappear.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    static void Init()
+    {
+        // More solver accuracy: several enemies can push into geometry at once.
+        Physics.defaultSolverIterations = 12;
+        Physics.defaultSolverVelocityIterations = 4;
+
+        // One-time cleanup of the original template scene — safe to do here
+        // since this runs once at launch, never from inside a UI click.
+        foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
+            if (go != null)
+                Object.Destroy(go);
+
+        var runnerGO = new GameObject("GameLoopRunner");
+        runnerGO.AddComponent<GameLoopRunner>();
+
+        Rebuild();
+    }
+
+    public static void RequestRebuild() => GameLoopRunner.Instance.ScheduleRebuild();
+
     public static void Rebuild()
     {
         GameManager.ClearListeners();
 
-        foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
-            if (go != null)
-                Object.DestroyImmediate(go);
+        if (gameRoot != null)
+            Object.Destroy(gameRoot);
 
-        foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
-        {
-            if (go != null && go.scene.IsValid() && go.scene.name == "DontDestroyOnLoad" && go.transform.parent == null)
-                Object.DestroyImmediate(go);
-        }
+        gameRoot = new GameObject("GameRoot");
+        EnemySpawner.Parent = gameRoot.transform;
 
         BuildWorld();
     }
@@ -43,6 +57,7 @@ public static class GameBootstrap
     {
         var ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
         ground.name = "Ground";
+        ground.transform.SetParent(gameRoot.transform);
         ground.transform.position = new Vector3(0f, -0.5f, 0f);
         ground.transform.localScale = new Vector3(100f, 1f, 100f);
         var groundMat = ground.GetComponent<Renderer>().material;
@@ -50,6 +65,7 @@ public static class GameBootstrap
         groundMat.mainTextureScale = new Vector2(50f, 50f);
 
         var sunGO = new GameObject("Sun");
+        sunGO.transform.SetParent(gameRoot.transform);
         var sun = sunGO.AddComponent<Light>();
         sun.type = LightType.Directional;
         sun.intensity = 1.1f;
@@ -57,6 +73,7 @@ public static class GameBootstrap
 
         var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         player.name = "Player";
+        player.transform.SetParent(gameRoot.transform);
         player.transform.position = new Vector3(0f, 1f, 0f);
         player.GetComponent<Renderer>().material.color = new Color(0.9f, 0.8f, 0.4f);
         var rb = player.AddComponent<Rigidbody>();
@@ -70,8 +87,9 @@ public static class GameBootstrap
 
         var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         wall.name = "Wall";
+        wall.transform.SetParent(gameRoot.transform);
         wall.transform.position = new Vector3(0f, 1f, -6f);
-        wall.transform.localScale = new Vector3(8f, 2f, 1f);
+        wall.transform.localScale = new Vector3(8f, 2f, 3f); // thicker: was 1, now 3
         wall.GetComponent<Renderer>().material.color = new Color(0.5f, 0.5f, 0.55f);
 
         int wave = 1;
@@ -83,6 +101,7 @@ public static class GameBootstrap
         };
 
         var camGO = new GameObject("IsometricCamera");
+        camGO.transform.SetParent(gameRoot.transform);
         var cam = camGO.AddComponent<Camera>();
         cam.orthographic = true;
         cam.orthographicSize = 10f;
@@ -92,6 +111,6 @@ public static class GameBootstrap
         var follow = camGO.AddComponent<IsometricCameraFollow>();
         follow.target = player.transform;
 
-        UIBootstrap.BuildUI(controller, combat, playerHealth);
+        UIBootstrap.BuildUI(gameRoot.transform, controller, combat, playerHealth);
     }
 }

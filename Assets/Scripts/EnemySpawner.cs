@@ -2,6 +2,8 @@ using UnityEngine;
 
 public static class EnemySpawner
 {
+    public static Transform Parent;
+
     public static void SpawnWave(int count, float radius)
     {
         for (int i = 0; i < count; i++)
@@ -19,14 +21,14 @@ public static class EnemySpawner
 
         var enemy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         enemy.name = "Enemy";
+        if (Parent != null) enemy.transform.SetParent(Parent);
         enemy.transform.position = position;
         enemy.GetComponent<Renderer>().material.color = new Color(0.6f, 0.1f, 0.1f);
         var rb = enemy.AddComponent<Rigidbody>();
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        var health = enemy.AddComponent<Health>();
+        enemy.AddComponent<Health>();
         enemy.AddComponent<SimpleEnemy>();
-        enemy.AddComponent<EnemyHealthBar>().Setup(enemy.transform, health);
     }
 }

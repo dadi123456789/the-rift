@@ -4,13 +4,15 @@ using UnityEngine.EventSystems;
 
 public static class UIBootstrap
 {
-    public static void BuildUI(IsometricPlayerController player, PlayerCombat combat, Health playerHealth)
+    public static void BuildUI(Transform parent, IsometricPlayerController player, PlayerCombat combat, Health playerHealth)
     {
         var esGO = new GameObject("EventSystem");
+        esGO.transform.SetParent(parent);
         esGO.AddComponent<EventSystem>();
         esGO.AddComponent<StandaloneInputModule>();
 
         var canvasGO = new GameObject("Canvas");
+        canvasGO.transform.SetParent(parent);
         var canvas = canvasGO.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvasGO.AddComponent<CanvasScaler>();
@@ -96,7 +98,7 @@ public static class UIBootstrap
         btnGO.AddComponent<Button>().onClick.AddListener(combat.RequestRangedAttack);
     }
 
-        static void BuildWeaponSwitchButton(Transform parent, PlayerCombat combat)
+    static void BuildWeaponSwitchButton(Transform parent, PlayerCombat combat)
     {
         var btnGO = new GameObject("SwitchWeaponButton");
         btnGO.transform.SetParent(parent, false);
@@ -117,31 +119,30 @@ public static class UIBootstrap
     }
 
     static void BuildHealthBar(Transform parent, Health playerHealth)
-{
-    var bgGO = new GameObject("HealthBarBackground");
-    bgGO.transform.SetParent(parent, false);
-    bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
-    var bgRect = bgGO.GetComponent<RectTransform>();
-    bgRect.sizeDelta = new Vector2(300f, 30f);
-    bgRect.anchorMin = new Vector2(0f, 1f);
-    bgRect.anchorMax = new Vector2(0f, 1f);
-    bgRect.pivot = new Vector2(0f, 1f);
-    bgRect.anchoredPosition = new Vector2(30f, -30f);
+    {
+        var bgGO = new GameObject("HealthBarBackground");
+        bgGO.transform.SetParent(parent, false);
+        bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+        var bgRect = bgGO.GetComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(300f, 30f);
+        bgRect.anchorMin = new Vector2(0f, 1f);
+        bgRect.anchorMax = new Vector2(0f, 1f);
+        bgRect.pivot = new Vector2(0f, 1f);
+        bgRect.anchoredPosition = new Vector2(30f, -30f);
 
-    var fillGO = new GameObject("HealthBarFill");
-    fillGO.transform.SetParent(bgGO.transform, false);
-    fillGO.AddComponent<Image>().color = new Color(0.85f, 0.2f, 0.2f, 0.95f);
-    var fillRect = fillGO.GetComponent<RectTransform>();
-    // Width-based shrink via anchors — reliable, doesn't depend on any sprite.
-    fillRect.anchorMin = new Vector2(0f, 0f);
-    fillRect.anchorMax = new Vector2(1f, 1f);
-    fillRect.offsetMin = Vector2.zero;
-    fillRect.offsetMax = Vector2.zero;
+        var fillGO = new GameObject("HealthBarFill");
+        fillGO.transform.SetParent(bgGO.transform, false);
+        fillGO.AddComponent<Image>().color = new Color(0.85f, 0.2f, 0.2f, 0.95f);
+        var fillRect = fillGO.GetComponent<RectTransform>();
+        fillRect.anchorMin = new Vector2(0f, 0f);
+        fillRect.anchorMax = new Vector2(1f, 1f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
 
-    if (playerHealth != null)
-        playerHealth.OnHealthChanged += (current, max) =>
-            fillRect.anchorMax = new Vector2(Mathf.Clamp01(current / max), 1f);
-}
+        if (playerHealth != null)
+            playerHealth.OnHealthChanged += (current, max) =>
+                fillRect.anchorMax = new Vector2(Mathf.Clamp01(current / max), 1f);
+    }
 
     static void BuildKillCounter(Transform parent)
     {
@@ -163,7 +164,7 @@ public static class UIBootstrap
         GameManager.OnKillCountChanged += (count) => text.text = $"Kills: {count}";
     }
 
-        static void BuildGameOverPanel(Transform parent)
+    static void BuildGameOverPanel(Transform parent)
     {
         var panelGO = new GameObject("GameOverPanel");
         panelGO.transform.SetParent(parent, false);
@@ -180,7 +181,6 @@ public static class UIBootstrap
         BuildShard(panelGO.transform, 45f);
         BuildShard(panelGO.transform, -45f);
 
-        // Banner: gold border + dark red fill — matches The Rift's signature color identity.
         var borderGO = new GameObject("BannerBorder");
         borderGO.transform.SetParent(panelGO.transform, false);
         borderGO.AddComponent<Image>().color = new Color(0.95f, 0.78f, 0.35f, 1f);
@@ -199,7 +199,6 @@ public static class UIBootstrap
         bannerRect.offsetMin = new Vector2(6f, 6f);
         bannerRect.offsetMax = new Vector2(-6f, -6f);
 
-        // Restart button: same gold-border treatment, green fill.
         var restartBorderGO = new GameObject("RestartBorder");
         restartBorderGO.transform.SetParent(panelGO.transform, false);
         restartBorderGO.AddComponent<Image>().color = new Color(0.95f, 0.78f, 0.35f, 1f);
