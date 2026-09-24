@@ -8,8 +8,17 @@ public static class GameBootstrap
     {
         GameManager.ClearListeners();
 
+        // Destroy everything in the current scene...
         foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
             Object.Destroy(go);
+
+        // ...AND any leftover DontDestroyOnLoad objects from the original template
+        // (this is what was causing the old "A Winner Is You" screen to survive).
+        foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            if (go.scene.IsValid() && go.scene.name == "DontDestroyOnLoad" && go.transform.parent == null)
+                Object.Destroy(go);
+        }
 
         BuildWorld();
     }

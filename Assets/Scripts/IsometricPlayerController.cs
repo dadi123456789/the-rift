@@ -20,9 +20,10 @@ public class IsometricPlayerController : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.2f))
-            return hit.collider.gameObject.name == "Ground";
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, Vector3.down, 1.2f);
+        foreach (var hit in hits)
+            if (hit.collider.gameObject.name == "Ground")
+                return true;
         return false;
     }
 
