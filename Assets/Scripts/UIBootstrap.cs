@@ -132,7 +132,7 @@ public static class UIBootstrap
     {
         var panelGO = new GameObject("GameOverPanel");
         panelGO.transform.SetParent(parent, false);
-        panelGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.8f);
+        panelGO.AddComponent<Image>().color = new Color(0.1f, 0f, 0f, 0.9f);
         var panelRect = panelGO.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
         panelRect.anchorMax = Vector2.one;
@@ -140,21 +140,27 @@ public static class UIBootstrap
         panelRect.offsetMax = Vector2.zero;
         panelGO.SetActive(false);
 
-        var textGO = new GameObject("GameOverText");
-        textGO.transform.SetParent(panelGO.transform, false);
-        var text = textGO.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = 60;
-        text.color = Color.white;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.text = "GAME OVER\nTap to Restart";
-        var textRect = textGO.GetComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
+        // A bright colored bar instead of relying on any font — always visible regardless of build quirks.
+        var barGO = new GameObject("GameOverBar");
+        barGO.transform.SetParent(panelGO.transform, false);
+        barGO.AddComponent<Image>().color = new Color(0.9f, 0.15f, 0.15f, 1f);
+        var barRect = barGO.GetComponent<RectTransform>();
+        barRect.anchorMin = new Vector2(0.5f, 0.5f);
+        barRect.anchorMax = new Vector2(0.5f, 0.5f);
+        barRect.sizeDelta = new Vector2(500f, 100f);
+        barRect.anchoredPosition = Vector2.zero;
 
-        panelGO.AddComponent<Button>().onClick.AddListener(GameManager.ResetGame);
+        // A big green "restart" square, clearly separate and tappable.
+        var restartGO = new GameObject("RestartSquare");
+        restartGO.transform.SetParent(panelGO.transform, false);
+        restartGO.AddComponent<Image>().color = new Color(0.2f, 0.8f, 0.3f, 1f);
+        var restartRect = restartGO.GetComponent<RectTransform>();
+        restartRect.anchorMin = new Vector2(0.5f, 0.35f);
+        restartRect.anchorMax = new Vector2(0.5f, 0.35f);
+        restartRect.sizeDelta = new Vector2(200f, 100f);
+        restartRect.anchoredPosition = Vector2.zero;
+        restartGO.AddComponent<Button>().onClick.AddListener(GameManager.ResetGame);
+
         GameManager.OnPlayerDied += () => panelGO.SetActive(true);
     }
 }
