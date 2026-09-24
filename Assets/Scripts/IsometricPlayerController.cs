@@ -7,12 +7,14 @@ public class IsometricPlayerController : MonoBehaviour
     [SerializeField] float jumpForce = 6f;
 
     Rigidbody rb;
+    Collider selfCollider;
     bool jumpRequested;
     static readonly Quaternion IsoRotation = Quaternion.Euler(0f, 45f, 0f);
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        selfCollider = GetComponent<Collider>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
@@ -20,10 +22,12 @@ public class IsometricPlayerController : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, Vector3.down, 1.2f);
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, Vector3.down, 1.3f);
         foreach (var hit in hits)
-            if (hit.collider.gameObject.name == "Ground")
-                return true;
+        {
+            if (hit.collider == selfCollider) continue;
+            return true;
+        }
         return false;
     }
 
