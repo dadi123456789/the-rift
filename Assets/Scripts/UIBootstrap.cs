@@ -80,33 +80,31 @@ public static class UIBootstrap
     }
 
     static void BuildHealthBar(Transform parent, Health playerHealth)
-    {
-        var bgGO = new GameObject("HealthBarBackground");
-        bgGO.transform.SetParent(parent, false);
-        bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
-        var bgRect = bgGO.GetComponent<RectTransform>();
-        bgRect.sizeDelta = new Vector2(300f, 30f);
-        bgRect.anchorMin = new Vector2(0f, 1f);
-        bgRect.anchorMax = new Vector2(0f, 1f);
-        bgRect.pivot = new Vector2(0f, 1f);
-        bgRect.anchoredPosition = new Vector2(30f, -30f);
+{
+    var bgGO = new GameObject("HealthBarBackground");
+    bgGO.transform.SetParent(parent, false);
+    bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+    var bgRect = bgGO.GetComponent<RectTransform>();
+    bgRect.sizeDelta = new Vector2(300f, 30f);
+    bgRect.anchorMin = new Vector2(0f, 1f);
+    bgRect.anchorMax = new Vector2(0f, 1f);
+    bgRect.pivot = new Vector2(0f, 1f);
+    bgRect.anchoredPosition = new Vector2(30f, -30f);
 
-        var fillGO = new GameObject("HealthBarFill");
-        fillGO.transform.SetParent(bgGO.transform, false);
-        var fillImage = fillGO.AddComponent<Image>();
-        fillImage.color = new Color(0.8f, 0.2f, 0.2f, 0.9f);
-        fillImage.type = Image.Type.Filled;
-        fillImage.fillMethod = Image.FillMethod.Horizontal;
-        fillImage.fillAmount = 1f;
-        var fillRect = fillGO.GetComponent<RectTransform>();
-        fillRect.anchorMin = Vector2.zero;
-        fillRect.anchorMax = Vector2.one;
-        fillRect.offsetMin = Vector2.zero;
-        fillRect.offsetMax = Vector2.zero;
+    var fillGO = new GameObject("HealthBarFill");
+    fillGO.transform.SetParent(bgGO.transform, false);
+    fillGO.AddComponent<Image>().color = new Color(0.85f, 0.2f, 0.2f, 0.95f);
+    var fillRect = fillGO.GetComponent<RectTransform>();
+    // Width-based shrink via anchors — reliable, doesn't depend on any sprite.
+    fillRect.anchorMin = new Vector2(0f, 0f);
+    fillRect.anchorMax = new Vector2(1f, 1f);
+    fillRect.offsetMin = Vector2.zero;
+    fillRect.offsetMax = Vector2.zero;
 
-        if (playerHealth != null)
-            playerHealth.OnHealthChanged += (current, max) => fillImage.fillAmount = current / max;
-    }
+    if (playerHealth != null)
+        playerHealth.OnHealthChanged += (current, max) =>
+            fillRect.anchorMax = new Vector2(Mathf.Clamp01(current / max), 1f);
+}
 
     static void BuildKillCounter(Transform parent)
     {
@@ -128,39 +126,75 @@ public static class UIBootstrap
         GameManager.OnKillCountChanged += (count) => text.text = $"Kills: {count}";
     }
 
-    static void BuildGameOverPanel(Transform parent)
+        static void BuildGameOverPanel(Transform parent)
     {
         var panelGO = new GameObject("GameOverPanel");
         panelGO.transform.SetParent(parent, false);
-        panelGO.AddComponent<Image>().color = new Color(0.1f, 0f, 0f, 0.9f);
+        panelGO.AddComponent<Image>().color = new Color(0.05f, 0f, 0f, 0.92f);
         var panelRect = panelGO.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
         panelRect.anchorMax = Vector2.one;
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
+        panelGO.AddComponent<CanvasGroup>();
+        panelGO.AddComponent<FadeInOnEnable>();
         panelGO.SetActive(false);
 
-        // A bright colored bar instead of relying on any font — always visible regardless of build quirks.
-        var barGO = new GameObject("GameOverBar");
-        barGO.transform.SetParent(panelGO.transform, false);
-        barGO.AddComponent<Image>().color = new Color(0.9f, 0.15f, 0.15f, 1f);
-        var barRect = barGO.GetComponent<RectTransform>();
-        barRect.anchorMin = new Vector2(0.5f, 0.5f);
-        barRect.anchorMax = new Vector2(0.5f, 0.5f);
-        barRect.sizeDelta = new Vector2(500f, 100f);
-        barRect.anchoredPosition = Vector2.zero;
+        BuildShard(panelGO.transform, 45f);
+        BuildShard(panelGO.transform, -45f);
 
-        // A big green "restart" square, clearly separate and tappable.
-        var restartGO = new GameObject("RestartSquare");
-        restartGO.transform.SetParent(panelGO.transform, false);
-        restartGO.AddComponent<Image>().color = new Color(0.2f, 0.8f, 0.3f, 1f);
-        var restartRect = restartGO.GetComponent<RectTransform>();
-        restartRect.anchorMin = new Vector2(0.5f, 0.35f);
-        restartRect.anchorMax = new Vector2(0.5f, 0.35f);
-        restartRect.sizeDelta = new Vector2(200f, 100f);
-        restartRect.anchoredPosition = Vector2.zero;
-        restartGO.AddComponent<Button>().onClick.AddListener(GameManager.ResetGame);
+        // Banner: gold border + dark red fill — matches The Rift's signature color identity.
+        var borderGO = new GameObject("BannerBorder");
+        borderGO.transform.SetParent(panelGO.transform, false);
+        borderGO.AddComponent<Image>().color = new Color(0.95f, 0.78f, 0.35f, 1f);
+        var borderRect = borderGO.GetComponent<RectTransform>();
+        borderRect.anchorMin = new Vector2(0.5f, 0.5f);
+        borderRect.anchorMax = new Vector2(0.5f, 0.5f);
+        borderRect.sizeDelta = new Vector2(520f, 120f);
+        borderRect.anchoredPosition = new Vector2(0f, 60f);
 
+        var bannerGO = new GameObject("BannerFill");
+        bannerGO.transform.SetParent(borderGO.transform, false);
+        bannerGO.AddComponent<Image>().color = new Color(0.5f, 0.07f, 0.07f, 1f);
+        var bannerRect = bannerGO.GetComponent<RectTransform>();
+        bannerRect.anchorMin = Vector2.zero;
+        bannerRect.anchorMax = Vector2.one;
+        bannerRect.offsetMin = new Vector2(6f, 6f);
+        bannerRect.offsetMax = new Vector2(-6f, -6f);
+
+        // Restart button: same gold-border treatment, green fill.
+        var restartBorderGO = new GameObject("RestartBorder");
+        restartBorderGO.transform.SetParent(panelGO.transform, false);
+        restartBorderGO.AddComponent<Image>().color = new Color(0.95f, 0.78f, 0.35f, 1f);
+        var restartBorderRect = restartBorderGO.GetComponent<RectTransform>();
+        restartBorderRect.anchorMin = new Vector2(0.5f, 0.5f);
+        restartBorderRect.anchorMax = new Vector2(0.5f, 0.5f);
+        restartBorderRect.sizeDelta = new Vector2(220f, 90f);
+        restartBorderRect.anchoredPosition = new Vector2(0f, -70f);
+
+        var restartFillGO = new GameObject("RestartFill");
+        restartFillGO.transform.SetParent(restartBorderGO.transform, false);
+        restartFillGO.AddComponent<Image>().color = new Color(0.2f, 0.75f, 0.35f, 1f);
+        var restartFillRect = restartFillGO.GetComponent<RectTransform>();
+        restartFillRect.anchorMin = Vector2.zero;
+        restartFillRect.anchorMax = Vector2.one;
+        restartFillRect.offsetMin = new Vector2(5f, 5f);
+        restartFillRect.offsetMax = new Vector2(-5f, -5f);
+
+        restartBorderGO.AddComponent<Button>().onClick.AddListener(GameManager.ResetGame);
         GameManager.OnPlayerDied += () => panelGO.SetActive(true);
+    }
+
+    static void BuildShard(Transform parent, float rotationZ)
+    {
+        var go = new GameObject("Shard");
+        go.transform.SetParent(parent, false);
+        go.AddComponent<Image>().color = new Color(0.95f, 0.78f, 0.35f, 0.9f);
+        var rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(140f, 10f);
+        rect.anchoredPosition = new Vector2(0f, 160f);
+        rect.localRotation = Quaternion.Euler(0f, 0f, rotationZ);
     }
 }
