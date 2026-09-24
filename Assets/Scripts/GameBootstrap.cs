@@ -68,7 +68,19 @@ public static class GameBootstrap
         var playerHealth = player.AddComponent<Health>();
         playerHealth.OnDeath += GameManager.HandlePlayerDeath;
 
-        EnemySpawner.SpawnWave(4, 7f);
+        var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = "Wall";
+        wall.transform.position = new Vector3(0f, 1f, -6f);
+        wall.transform.localScale = new Vector3(8f, 2f, 1f);
+        wall.GetComponent<Renderer>().material.color = new Color(0.5f, 0.5f, 0.55f);
+
+        int wave = 1;
+        EnemySpawner.SpawnWave(3, 7f);
+        GameManager.OnWaveCleared += () =>
+        {
+            wave++;
+            EnemySpawner.SpawnWave(2 + wave, 7f + wave);
+        };
 
         var camGO = new GameObject("IsometricCamera");
         var cam = camGO.AddComponent<Camera>();

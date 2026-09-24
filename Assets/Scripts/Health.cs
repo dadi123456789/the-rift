@@ -7,6 +7,7 @@ public class Health : MonoBehaviour
     public float CurrentHealth { get; private set; }
     public UnityAction<float, float> OnHealthChanged; // current, max
     public UnityAction OnDeath;
+    public UnityAction<GameObject> RequestHealthBarSetup;
 
     void Awake() => CurrentHealth = maxHealth;
 

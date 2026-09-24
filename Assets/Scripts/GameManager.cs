@@ -1,3 +1,5 @@
+using UnityEngine.SceneManagement;
+
 public static class GameManager
 {
     public static int Kills { get; private set; }
@@ -23,13 +25,11 @@ public static class GameManager
 
     public static void HandlePlayerDeath() => OnPlayerDied?.Invoke();
 
-    // No scene reload — rebuild everything procedurally instead,
-    // so leftover template objects saved in the scene file can never resurface.
     public static void ResetGame()
     {
         Kills = 0;
         AliveEnemies = 0;
-        GameBootstrap.Rebuild();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public static void ClearListeners()

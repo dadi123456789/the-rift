@@ -21,6 +21,8 @@ public static class UIBootstrap
         BuildJoystick(canvasGO.transform);
         BuildJumpButton(canvasGO.transform, player);
         BuildAttackButton(canvasGO.transform, combat);
+        BuildRangedButton(canvasGO.transform, combat);
+        BuildWeaponSwitchButton(canvasGO.transform, combat);
         BuildHealthBar(canvasGO.transform, playerHealth);
         BuildKillCounter(canvasGO.transform);
         BuildGameOverPanel(canvasGO.transform);
@@ -77,6 +79,41 @@ public static class UIBootstrap
         rect.anchoredPosition = new Vector2(-320f, 160f);
 
         btnGO.AddComponent<Button>().onClick.AddListener(combat.RequestAttack);
+    }
+
+    static void BuildRangedButton(Transform parent, PlayerCombat combat)
+    {
+        var btnGO = new GameObject("RangedButton");
+        btnGO.transform.SetParent(parent, false);
+        btnGO.AddComponent<Image>().color = new Color(0.9f, 0.7f, 0.2f, 0.7f);
+        var rect = btnGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(150f, 150f);
+        rect.anchorMin = new Vector2(1f, 0f);
+        rect.anchorMax = new Vector2(1f, 0f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(-500f, 160f);
+
+        btnGO.AddComponent<Button>().onClick.AddListener(combat.RequestRangedAttack);
+    }
+
+        static void BuildWeaponSwitchButton(Transform parent, PlayerCombat combat)
+    {
+        var btnGO = new GameObject("SwitchWeaponButton");
+        btnGO.transform.SetParent(parent, false);
+        btnGO.AddComponent<Image>().color = new Color(0.6f, 0.6f, 0.9f, 0.7f);
+        var rect = btnGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(120f, 120f);
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = new Vector2(-30f, -100f);
+
+        bool usingSword = false;
+        btnGO.AddComponent<Button>().onClick.AddListener(() =>
+        {
+            usingSword = !usingSword;
+            combat.EquipWeapon(usingSword ? WeaponLibrary.Sword : WeaponLibrary.Fists);
+        });
     }
 
     static void BuildHealthBar(Transform parent, Health playerHealth)

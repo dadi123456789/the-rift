@@ -29,6 +29,7 @@ public class SimpleEnemy : MonoBehaviour
         health.OnDeath += () =>
         {
             GameManager.RegisterKill();
+            GameManager.RegisterEnemyDeath();
             Destroy(gameObject);
         };
 

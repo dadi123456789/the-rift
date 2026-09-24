@@ -15,6 +15,8 @@ public static class EnemySpawner
 
     static void SpawnEnemy(Vector3 position)
     {
+        GameManager.RegisterEnemySpawned();
+
         var enemy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         enemy.name = "Enemy";
         enemy.transform.position = position;
@@ -23,7 +25,8 @@ public static class EnemySpawner
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        enemy.AddComponent<Health>();
+        var health = enemy.AddComponent<Health>();
         enemy.AddComponent<SimpleEnemy>();
+        enemy.AddComponent<EnemyHealthBar>().Setup(enemy.transform, health);
     }
 }
