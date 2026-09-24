@@ -20,11 +20,7 @@ public class IsometricPlayerController : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, Vector3.down, 1.2f);
-        foreach (var hit in hits)
-            if (hit.collider.gameObject.name == "Ground")
-                return true;
-        return false;
+        return rb.position.y <= 1.05f && rb.velocity.y <= 0.1f;
     }
 
     void FixedUpdate()

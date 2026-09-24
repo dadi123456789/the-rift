@@ -79,10 +79,9 @@ public class SimpleEnemy : MonoBehaviour
         StartCoroutine(FlashRoutine());
     }
 
-    System.Collections.IEnumerator FlashRoutine()
+ System.Collections.IEnumerator FlashRoutine()
     {
         rend.material.color = Color.white;
         yield return new WaitForSeconds(0.15f);
         if (rend != null) rend.material.color = originalColor;
     }
-}
