@@ -8,18 +8,16 @@ public static class GameBootstrap
     {
         GameManager.ClearListeners();
 
-        // Destroy everything in the current scene IMMEDIATELY (not deferred),
-        // so no leftover physics/collision from the old template can run
-        // even for a single frame.
+        // Destroy everything in the current scene...
         foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
-            Object.DestroyImmediate(go);
+            Object.Destroy(go);
 
         // ...AND any leftover DontDestroyOnLoad objects from the original template
         // (this is what was causing the old "A Winner Is You" screen to survive).
         foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
         {
             if (go.scene.IsValid() && go.scene.name == "DontDestroyOnLoad" && go.transform.parent == null)
-                Object.DestroyImmediate(go);
+                Object.Destroy(go);
         }
         BuildWorld();
     }
