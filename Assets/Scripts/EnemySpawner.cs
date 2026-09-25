@@ -28,7 +28,8 @@ public static class EnemySpawner
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        enemy.AddComponent<Health>();
+        var health = enemy.AddComponent<Health>();
         enemy.AddComponent<SimpleEnemy>();
+        enemy.AddComponent<EnemyHealthBar>().Setup(enemy.transform, health);
     }
 }
