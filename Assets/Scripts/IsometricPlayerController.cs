@@ -7,21 +7,20 @@ public class IsometricPlayerController : MonoBehaviour
     [SerializeField] float jumpForce = 6f;
 
     Rigidbody rb;
+    Collider col;
     bool jumpRequested;
     static readonly Quaternion IsoRotation = Quaternion.Euler(0f, 45f, 0f);
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
     public void RequestJump() => jumpRequested = true;
 
-    bool IsGrounded()
-    {
-        return rb.position.y <= 1.05f && rb.velocity.y <= 0.1f;
-    }
+    bool IsGrounded() => rb.position.y <= 1.05f && rb.velocity.y <= 0.1f;
 
     void FixedUpdate()
     {
@@ -49,5 +48,7 @@ public class IsometricPlayerController : MonoBehaviour
             if (rb.velocity.y < 0f)
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         }
+
+        PhysicsUtil.DepenetrateFromObstacles(rb, col);
     }
 }
