@@ -27,6 +27,7 @@ public static class UIBootstrap
         BuildWeaponSwitchButton(canvasGO.transform, combat);
         BuildHealthBar(canvasGO.transform, playerHealth);
         BuildKillCounter(canvasGO.transform);
+        BuildCurrencyCounter(canvasGO.transform);
         BuildGameOverPanel(canvasGO.transform);
     }
 
@@ -162,6 +163,26 @@ public static class UIBootstrap
         rect.anchoredPosition = new Vector2(-30f, -30f);
 
         GameManager.OnKillCountChanged += (count) => text.text = $"Kills: {count}";
+    }
+
+    static void BuildCurrencyCounter(Transform parent)
+    {
+        var textGO = new GameObject("CurrencyText");
+        textGO.transform.SetParent(parent, false);
+        var text = textGO.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = 36;
+        text.color = new Color(1f, 0.85f, 0.2f);
+        text.alignment = TextAnchor.UpperRight;
+        text.text = "Shards: 0";
+        var rect = textGO.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.sizeDelta = new Vector2(300f, 50f);
+        rect.anchoredPosition = new Vector2(-30f, -80f);
+
+        GameManager.OnCurrencyChanged += (amount) => text.text = $"Shards: {amount}";
     }
 
     static void BuildGameOverPanel(Transform parent)
