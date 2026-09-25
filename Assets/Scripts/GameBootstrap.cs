@@ -8,12 +8,9 @@ public static class GameBootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
-        // More solver accuracy: several enemies can push into geometry at once.
         Physics.defaultSolverIterations = 12;
         Physics.defaultSolverVelocityIterations = 4;
 
-        // One-time cleanup of the original template scene — safe to do here
-        // since this runs once at launch, never from inside a UI click.
         foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
             if (go != null)
                 Object.Destroy(go);
@@ -31,10 +28,11 @@ public static class GameBootstrap
         GameManager.ClearListeners();
 
         if (gameRoot != null)
-            Object.Destroy(gameRoot);
+            Object.DestroyImmediate(gameRoot);
 
         gameRoot = new GameObject("GameRoot");
         EnemySpawner.Parent = gameRoot.transform;
+        Obstacle.All.Clear();
 
         BuildWorld();
     }
@@ -89,8 +87,9 @@ public static class GameBootstrap
         wall.name = "Wall";
         wall.transform.SetParent(gameRoot.transform);
         wall.transform.position = new Vector3(0f, 1f, -6f);
-        wall.transform.localScale = new Vector3(8f, 2f, 3f); // thicker: was 1, now 3
+        wall.transform.localScale = new Vector3(8f, 2f, 3f);
         wall.GetComponent<Renderer>().material.color = new Color(0.5f, 0.5f, 0.55f);
+        wall.AddComponent<Obstacle>();
 
         int wave = 1;
         EnemySpawner.SpawnWave(3, 7f);
