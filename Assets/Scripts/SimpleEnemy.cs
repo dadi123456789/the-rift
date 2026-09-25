@@ -57,7 +57,9 @@ public class SimpleEnemy : MonoBehaviour
             if (distance <= detectionRange && distance > stopDistance)
             {
                 Vector3 direction = toPlayer.normalized;
-                rb.velocity = new Vector3(direction.x * moveSpeed, rb.velocity.y, direction.z * moveSpeed);
+                Vector3 desired = new Vector3(direction.x * moveSpeed, 0f, direction.z * moveSpeed);
+                desired = PhysicsUtil.BlockMovementIntoObstacles(rb.position, desired, rb.rotation, col);
+                rb.velocity = new Vector3(desired.x, rb.velocity.y, desired.z);
             }
             else
             {

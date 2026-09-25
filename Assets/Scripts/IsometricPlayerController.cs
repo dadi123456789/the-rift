@@ -30,6 +30,9 @@ public class IsometricPlayerController : MonoBehaviour
 
         Vector3 isoDirection = IsoRotation * new Vector3(input.x, 0f, input.y);
         Vector3 desiredHorizontal = isoDirection * moveSpeed;
+
+        desiredHorizontal = PhysicsUtil.BlockMovementIntoObstacles(rb.position, desiredHorizontal, rb.rotation, col);
+
         rb.velocity = new Vector3(desiredHorizontal.x, rb.velocity.y, desiredHorizontal.z);
 
         if (isoDirection.sqrMagnitude > 0.01f)
@@ -48,7 +51,5 @@ public class IsometricPlayerController : MonoBehaviour
             if (rb.velocity.y < 0f)
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         }
-
-        PhysicsUtil.DepenetrateFromObstacles(rb, col);
     }
 }

@@ -148,22 +148,27 @@ public static class UIBootstrap
 
     static void BuildKillCounter(Transform parent)
     {
-        var textGO = new GameObject("KillCounterText");
-        textGO.transform.SetParent(parent, false);
-        var text = textGO.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = 36;
-        text.color = Color.white;
-        text.alignment = TextAnchor.UpperRight;
-        text.text = "Kills: 0";
-        var rect = textGO.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(1f, 1f);
-        rect.anchorMax = new Vector2(1f, 1f);
-        rect.pivot = new Vector2(1f, 1f);
-        rect.sizeDelta = new Vector2(300f, 50f);
-        rect.anchoredPosition = new Vector2(-30f, -30f);
+        var bgGO = new GameObject("KillBarBackground");
+        bgGO.transform.SetParent(parent, false);
+        bgGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.4f);
+        var bgRect = bgGO.GetComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(200f, 24f);
+        bgRect.anchorMin = new Vector2(1f, 1f);
+        bgRect.anchorMax = new Vector2(1f, 1f);
+        bgRect.pivot = new Vector2(1f, 1f);
+        bgRect.anchoredPosition = new Vector2(-30f, -30f);
 
-        GameManager.OnKillCountChanged += (count) => text.text = $"Kills: {count}";
+        var fillGO = new GameObject("KillBarFill");
+        fillGO.transform.SetParent(bgGO.transform, false);
+        fillGO.AddComponent<Image>().color = new Color(0.9f, 0.2f, 0.2f, 0.9f);
+        var fillRect = fillGO.GetComponent<RectTransform>();
+        fillRect.anchorMin = new Vector2(0f, 0f);
+        fillRect.anchorMax = new Vector2(0f, 1f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+
+        GameManager.OnKillCountChanged += (count) =>
+            fillRect.anchorMax = new Vector2(Mathf.Clamp01(count / 20f), 1f);
     }
 
     static void BuildCurrencyCounter(Transform parent)

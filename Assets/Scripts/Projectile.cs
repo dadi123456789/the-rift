@@ -20,7 +20,7 @@ public class Projectile : MonoBehaviour
     public void Launch(Vector3 dir)
     {
         direction = dir.normalized;
-        DebugOverlay.ProjectilesFired++;
+        DebugOverlay.RegisterFired();
         Destroy(gameObject, lifeTime);
     }
 
@@ -35,7 +35,7 @@ public class Projectile : MonoBehaviour
         var health = other.GetComponent<Health>();
         if (health != null)
         {
-            DebugOverlay.ProjectileHits++;
+            DebugOverlay.RegisterHit();
             health.TakeDamage(damage);
         }
         Destroy(gameObject);

@@ -2,11 +2,17 @@ using UnityEngine;
 
 public static class PhysicsUtil
 {
-    public static void DepenetrateFromObstacles(Rigidbody rb, Collider selfCollider)
+    // Predicts the next position BEFORE moving there — if it would overlap any
+    // Obstacle, the movement for this step is cancelled entirely. This prevents
+    // tunneling instead of trying to fix it after the fact.
+    public static Vector3 BlockMovementIntoObstacles(Vector3 currentPosition, Vector3 horizontalVelocity, Quaternion rotation, Collider selfCollider)
     {
-        if (selfCollider == null) return;
+        if (selfCollider == null || horizontalVelocity.sqrMagnitude < 0.0001f)
+            return horizontalVelocity;
 
-        Physics.SyncTransforms(); // force the physics engine to see our latest manual position writes
+        Vector3 predictedPosition = currentPosition + horizontalVelocity * Time.fixedDeltaTime;
+
+        Physics.SyncTransforms();
 
         foreach (var obstacleCol in Obstacle.All)
         {
@@ -14,16 +20,15 @@ public static class PhysicsUtil
 
             Vector3 direction;
             float distance;
-            bool overlapping = Physics.ComputePenetration(
-                selfCollider, rb.position, rb.rotation,
+            bool wouldOverlap = Physics.ComputePenetration(
+                selfCollider, predictedPosition, rotation,
                 obstacleCol, obstacleCol.transform.position, obstacleCol.transform.rotation,
                 out direction, out distance);
 
-            if (overlapping)
-            {
-                rb.position += direction * distance;
-                Physics.SyncTransforms();
-            }
+            if (wouldOverlap)
+                return Vector3.zero; // hard stop this step — simple and bulletproof
         }
+
+        return horizontalVelocity;
     }
 }
