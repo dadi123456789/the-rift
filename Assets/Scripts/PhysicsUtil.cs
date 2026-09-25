@@ -2,11 +2,11 @@ using UnityEngine;
 
 public static class PhysicsUtil
 {
-    // Manually guarantees a body can never end up inside a registered Obstacle,
-    // regardless of any PhysX edge case.
     public static void DepenetrateFromObstacles(Rigidbody rb, Collider selfCollider)
     {
         if (selfCollider == null) return;
+
+        Physics.SyncTransforms(); // force the physics engine to see our latest manual position writes
 
         foreach (var obstacleCol in Obstacle.All)
         {
@@ -20,7 +20,10 @@ public static class PhysicsUtil
                 out direction, out distance);
 
             if (overlapping)
+            {
                 rb.position += direction * distance;
+                Physics.SyncTransforms();
+            }
         }
     }
 }
