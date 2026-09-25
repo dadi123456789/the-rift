@@ -11,6 +11,7 @@ public class SimpleEnemy : MonoBehaviour
     [SerializeField] float contactCooldown = 1f;
 
     Rigidbody rb;
+    Collider col;
     Health health;
     Renderer rend;
     Color originalColor;
@@ -21,6 +22,7 @@ public class SimpleEnemy : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
         health = GetComponent<Health>();
         rend = GetComponent<Renderer>();
         originalColor = rend.material.color;
@@ -30,6 +32,7 @@ public class SimpleEnemy : MonoBehaviour
         {
             GameManager.RegisterKill();
             GameManager.RegisterEnemyDeath();
+            LootPickup.Spawn(transform.position, transform.parent);
             Destroy(gameObject);
         };
 
@@ -43,27 +46,30 @@ public class SimpleEnemy : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (player == null || health.CurrentHealth <= 0f) return;
+        if (health.CurrentHealth <= 0f) return;
 
-        Vector3 toPlayer = player.position - transform.position;
-        toPlayer.y = 0f;
-        float distance = toPlayer.magnitude;
+        if (player != null)
+        {
+            Vector3 toPlayer = player.position - transform.position;
+            toPlayer.y = 0f;
+            float distance = toPlayer.magnitude;
 
-        if (distance <= detectionRange && distance > stopDistance)
-        {
-            Vector3 direction = toPlayer.normalized;
-            rb.velocity = new Vector3(direction.x * moveSpeed, rb.velocity.y, direction.z * moveSpeed);
-        }
-        else
-        {
-            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-        }
+            if (distance <= detectionRange && distance > stopDistance)
+            {
+                Vector3 direction = toPlayer.normalized;
+                rb.velocity = new Vector3(direction.x * moveSpeed, rb.velocity.y, direction.z * moveSpeed);
+            }
+            else
+            {
+                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+            }
 
-        if (distance <= attackRange && Time.time - lastContactTime >= contactCooldown)
-        {
-            lastContactTime = Time.time;
-            if (playerHealth != null)
-                playerHealth.TakeDamage(contactDamage);
+            if (distance <= attackRange && Time.time - lastContactTime >= contactCooldown)
+            {
+                lastContactTime = Time.time;
+                if (playerHealth != null)
+                    playerHealth.TakeDamage(contactDamage);
+            }
         }
 
         if (rb.position.y < 0.5f)
@@ -72,6 +78,8 @@ public class SimpleEnemy : MonoBehaviour
             if (rb.velocity.y < 0f)
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         }
+
+        PhysicsUtil.DepenetrateFromObstacles(rb, col);
     }
 
     void FlashColor()
@@ -80,21 +88,10 @@ public class SimpleEnemy : MonoBehaviour
         StartCoroutine(FlashRoutine());
     }
 
-System.Collections.IEnumerator FlashRoutine()
+    System.Collections.IEnumerator FlashRoutine()
     {
         rend.material.color = Color.white;
         yield return new WaitForSeconds(0.15f);
         if (rend != null) rend.material.color = originalColor;
-    }
-    void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.name != "Player") return;
-        if (Time.time - lastContactTime < contactCooldown) return;
-
-        var targetHealth = collision.gameObject.GetComponent<Health>();
-        if (targetHealth == null) return;
-
-        lastContactTime = Time.time;
-        targetHealth.TakeDamage(contactDamage);
     }
 }
