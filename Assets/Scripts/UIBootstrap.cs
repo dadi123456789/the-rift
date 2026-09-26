@@ -30,6 +30,8 @@ public static class UIBootstrap
         BuildCurrencyCounter(canvasGO.transform);
         BuildGameOverPanel(canvasGO.transform);
         DebugOverlay.Build(canvasGO.transform);
+        BuildStamp.Build(canvasGO.transform);
+        WallCheckIndicator.Build(canvasGO.transform);
     }
 
     static void BuildJoystick(Transform parent)
