@@ -7,14 +7,12 @@ public class IsometricPlayerController : MonoBehaviour
     [SerializeField] float jumpForce = 6f;
 
     Rigidbody rb;
-    Collider col;
     bool jumpRequested;
     static readonly Quaternion IsoRotation = Quaternion.Euler(0f, 45f, 0f);
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        col = GetComponent<Collider>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
@@ -31,7 +29,7 @@ public class IsometricPlayerController : MonoBehaviour
         Vector3 isoDirection = IsoRotation * new Vector3(input.x, 0f, input.y);
         Vector3 desiredHorizontal = isoDirection * moveSpeed;
 
-        desiredHorizontal = PhysicsUtil.BlockMovementIntoObstacles(rb.position, desiredHorizontal, rb.rotation, col);
+        desiredHorizontal = MovementBlocker.ClampMovement(rb.position, desiredHorizontal, 0.55f);
 
         rb.velocity = new Vector3(desiredHorizontal.x, rb.velocity.y, desiredHorizontal.z);
 
