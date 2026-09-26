@@ -11,7 +11,6 @@ public class SimpleEnemy : MonoBehaviour
     [SerializeField] float contactCooldown = 1f;
 
     Rigidbody rb;
-    Collider col;
     Health health;
     Renderer rend;
     Color originalColor;
@@ -22,7 +21,6 @@ public class SimpleEnemy : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        col = GetComponent<Collider>();
         health = GetComponent<Health>();
         rend = GetComponent<Renderer>();
         originalColor = rend.material.color;
@@ -58,7 +56,7 @@ public class SimpleEnemy : MonoBehaviour
             {
                 Vector3 direction = toPlayer.normalized;
                 Vector3 desired = new Vector3(direction.x * moveSpeed, 0f, direction.z * moveSpeed);
-                desired = PhysicsUtil.BlockMovementIntoObstacles(rb.position, desired, rb.rotation, col);
+                desired = MovementBlocker.ClampMovement(rb.position, desired, 0.5f);
                 rb.velocity = new Vector3(desired.x, rb.velocity.y, desired.z);
             }
             else
