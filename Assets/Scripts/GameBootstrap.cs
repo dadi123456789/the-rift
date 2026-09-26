@@ -32,7 +32,6 @@ public static class GameBootstrap
 
         gameRoot = new GameObject("GameRoot");
         EnemySpawner.Parent = gameRoot.transform;
-        Obstacle.All.Clear();
 
         BuildWorld();
     }
@@ -89,7 +88,7 @@ public static class GameBootstrap
         wall.transform.position = new Vector3(0f, 1f, -6f);
         wall.transform.localScale = new Vector3(8f, 2f, 3f);
         wall.GetComponent<Renderer>().material.color = new Color(0.5f, 0.5f, 0.55f);
-        wall.AddComponent<Obstacle>();
+        wall.layer = MovementBlocker.ObstacleLayer;
 
         int wave = 1;
         EnemySpawner.SpawnWave(3, 7f);
