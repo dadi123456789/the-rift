@@ -27,21 +27,33 @@ public class Projectile : MonoBehaviour
 
         float step = speed * Time.fixedDeltaTime;
 
+        // Catches targets we're already overlapping — SphereCast alone
+        // ignores colliders the sphere already intersects at the start.
+        Collider[] overlaps = Physics.OverlapSphere(transform.position, 0.2f);
+        foreach (var overlap in overlaps)
+        {
+            if (TryHit(overlap)) return;
+        }
+
+        // Catches targets in the path ahead (fast-moving tunneling case).
         if (Physics.SphereCast(transform.position, 0.2f, direction, out RaycastHit hit, step))
         {
-            if (hit.collider.gameObject.name != "Player")
-            {
-                var health = hit.collider.GetComponent<Health>();
-                if (health != null)
-                {
-                    DebugOverlay.RegisterHit();
-                    health.TakeDamage(damage);
-                }
-                Destroy(gameObject);
-                return;
-            }
+            if (TryHit(hit.collider)) return;
         }
 
         transform.position += direction * step;
+    }
+
+    bool TryHit(Collider col)
+    {
+        if (col.gameObject.name == "Player") return false;
+
+        var health = col.GetComponent<Health>();
+        if (health == null) return false;
+
+        DebugOverlay.RegisterHit();
+        health.TakeDamage(damage);
+        Destroy(gameObject);
+        return true;
     }
 }
