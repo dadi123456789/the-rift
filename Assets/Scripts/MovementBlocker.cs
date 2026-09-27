@@ -11,9 +11,15 @@ public static class MovementBlocker
     {
         if (velocity.sqrMagnitude < 0.0001f) return velocity;
 
+        int mask = 1 << ObstacleLayer;
+
+        // Already overlapping an obstacle — SphereCast alone won't catch this,
+        // it only reports hits found ahead of the sweep, not at the start point.
+        if (Physics.CheckSphere(position, radius, mask))
+            return Vector3.zero;
+
         float moveDistance = velocity.magnitude * Time.fixedDeltaTime + 0.05f;
         Vector3 direction = velocity.normalized;
-        int mask = 1 << ObstacleLayer;
 
         if (Physics.SphereCast(position, radius, direction, out RaycastHit hit, moveDistance, mask))
             return Vector3.zero;
